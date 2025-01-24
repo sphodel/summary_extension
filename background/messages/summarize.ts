@@ -1,6 +1,6 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 
-const API_KEY = "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"
+const API_KEY = process.env.PLASMO_PUBLIC_HF_API_KEY
 
 async function query(data) {
   const response = await fetch(

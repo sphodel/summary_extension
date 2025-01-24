@@ -29,9 +29,6 @@ chrome.runtime.onInstalled.addListener(() => {
   })
 })
 
-const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-const API_KEY = "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" // 需要从 HuggingFace 获取
-
 // 添加这个消息处理器的注册
 export const handler: PlasmoMessaging.MessageHandler<
   { text: string },
