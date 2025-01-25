@@ -2,6 +2,12 @@ import type { PlasmoMessaging } from "@plasmohq/messaging"
 
 let selectedText = ''
 
+// 监听插件图标点击事件
+chrome.action.onClicked.addListener((tab) => {
+  // 打开侧边栏
+  chrome.sidePanel.open({ windowId: tab.windowId })
+})
+
 // 监听来自content script的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "openSidePanel") {
@@ -34,12 +40,12 @@ export const handler: PlasmoMessaging.MessageHandler<
   { text: string },
   { success: boolean; summary?: string; error?: string }
 > = async (req, res) => {
-  console.log("消息处理器被调用")  // 新增日志
+
   const { text } = req.body
-  console.log('收到总结请求，文本:', text)
 
   try {
-    console.log('开始调用 API')
+    const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn'
+    const API_KEY='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 '
     const response = await fetch(HUGGINGFACE_API_URL, {
       method: 'POST',
       headers: {
@@ -56,12 +62,9 @@ export const handler: PlasmoMessaging.MessageHandler<
       })
     })
 
-    console.log('API 调用完成，等待响应')  // 新增日志
     const data = await response.json()
-    console.log('API 响应:', data)
     
     if (Array.isArray(data) && data[0]?.summary_text) {
-      console.log('总结成功:', data[0].summary_text)
       res.send({
         success: true,
         summary: data[0].summary_text

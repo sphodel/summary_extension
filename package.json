@@ -31,6 +31,17 @@
   "manifest": {
     "host_permissions": [
       "https://*/*"
-    ]
+    ],
+    "permissions": [
+      "sidePanel",
+      "scripting",
+      "tabs"
+    ],
+    "action": {
+      "default_title": "打开侧边栏"
+    },
+    "side_panel": {
+      "default_path": "sidepanel.html"
+    }
   }
 }
