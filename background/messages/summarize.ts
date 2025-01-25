@@ -1,21 +1,23 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
+import { OpenAI } from "openai";
 
-const API_KEY = process.env.PLASMO_PUBLIC_HF_API_KEY
+const client = new OpenAI({
+	baseURL: "https://api.deepseek.com",
+	apiKey: "sk-e0c1096af22f435eb77ee856a84ebf3f"
+});
 
 async function query(data) {
-  const response = await fetch(
-    "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
-    {
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify(data),
-    }
-  )
-  const result = await response.json()
-  return result
+	const chatCompletion = await client.chat.completions.create({
+		model: "deepseek-chat",
+		messages: [
+			{
+				role: "user",
+				content: `请用中文总结以下内容，要求简洁明了：\n\n${data.inputs}`
+			}
+		],
+		max_tokens: 500
+	});
+	return chatCompletion.choices[0].message;
 }
 
 const handler: PlasmoMessaging.MessageHandler<
@@ -31,15 +33,19 @@ const handler: PlasmoMessaging.MessageHandler<
     const response = await query({ inputs: text })
     console.log('API 响应:', response)
     
-    if (Array.isArray(response) && response[0]?.summary_text) {
-      console.log('总结成功:', response[0].summary_text)
-      res.send({
-        success: true,
-        summary: response[0].summary_text
-      })
-    } else {
-      throw new Error('无效的响应格式')
+    if (Array.isArray(response)) {
+      const summary = response[0]?.generated_text || response[0]?.text || response[0]
+      if (summary) {
+        console.log('总结成功:', summary)
+        res.send({
+          success: true,
+          summary: summary
+        })
+        return
+      }
     }
+    
+    throw new Error('无效的响应格式：' + JSON.stringify(response))
   } catch (error) {
     console.error('总结失败:', error)
     res.send({
